@@ -30,11 +30,11 @@ class bearlander():
         
         self.user = user
 
-    def save_to_gcal(self):
+    def save_to_gcal(self, week=0): #week 0 = this week, week 1 = next week
         calendars_name = self.calendars_name
         calendars_data = self.calendars_data
-        self.user_instance.updateVortalInformation(["jaydsoh@gmail.com", 'pYTHON101'], "25S64")
-        data = self.user_instance.getVortalInformation(self.user)
+        #self.user_instance.updateVortalInformation(["", ''], "25S64") 
+        data = self.user_instance.getVortalInformation()
         if data == None:
             print(f"[CAL] User {self.user} needs to update Vortal Info!")
             print("[CAL] Unable to save to calendar.")
@@ -83,25 +83,26 @@ class bearlander():
             
             events = events.get("items")
             
-            if len(events) > 5:
-                print(f"[CAL] More than 5 events found this week.") #save to next week instead
+            if len(events) > 5 or week == 1:
+                #print(f"[CAL] Saving to next week.") #save to next week instead
                 start_date = n_monday
                 
             else:
                 start_date = t_monday
                 
             print(f"[CAL] Events saved from {start_date} onwards.")
-            userid = "b90412dca0f08d6b012eca44c4a09304"
+
             
-            agent = portalAgent(data.get("username"), data.get("password"), save_path=cache, user=self.user)
-            timetable = tt()
-            path = agent.getTimetable(userid, start_date)
+            agent = portalAgent(data.get("username"), data.get("password"), user=self.user)
+            timetable = tt(self.user)
+            _, path = agent.getTimetable(start_date)
 
             i = 0
             total = 0
             print(f"\n[CAL] Updating Calendar.")
             for day in ["monday", "tuesday", "wednesday", "thursday", "friday"]:
-                lessons = timetable.timetable(path, day)
+                _, lessons = timetable.timetable(path, day)
+                # print(f"[DEBUG] {lessons}")
                 
                 for lesson in lessons:
                     total += 1
@@ -136,8 +137,12 @@ class bearlander():
                 
             print(f"[CAL] {total} events updated for user {self.user}")
             
-            return True, ""
+            return True, total
       
-if __name__ == "__main__":  
-    gcal = bearlander('jaydsoh')
-    gcal.save_to_gcal()
+# if __name__ == "__main__":  
+#     user_instance = User("jaydsoh")
+#     # user_instance.updateVortalInformation(["", ""], "25S64")
+#     # user_instance.updateTimetablePreferences()
+    
+#     bearlander_instance = bearlander('jaydsoh')
+#     bearlander_instance.save_to_gcal()
